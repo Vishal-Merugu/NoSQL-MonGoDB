@@ -50,12 +50,6 @@ class User{
     const updatedCart = { items : updatedCartItems }
     const db = getDb();
     return db.collection('users').updateOne({ _id : new ObjectId(this._id) }, { $set : { cart : updatedCart } })
-    .then(result => {
-      return result
-    })
-    .catch(err => {
-      console.log(err);
-    })
   }  
 
   getCart(){
@@ -71,8 +65,13 @@ class User{
           ...p,
           quantity : this.cart.items.find(i => {
             return i.productId.toString() === p._id.toString()
-        })}.quantity
+        }).quantity
+        };
       })
+    })
+    .then(result => {
+      console.log(result);
+      return result
     })
     .catch(err => {
       console.log(err);
@@ -87,6 +86,42 @@ class User{
     return db.collection('users').updateOne({ _id : new ObjectId(this._id)}, { $set : { cart : { items : updatedCartItems } } })
     .then(result => {
       console.log(result);
+    })
+    .catch(err => {
+      console.log(err);
+    })
+  }
+
+  addOrder(){
+    const db = getDb()
+    return this.getCart()
+    .then(products => {
+      let order = {
+        items : products,
+        user : {
+          _id : new ObjectId(this._id),
+          name : this.name
+        }
+      }
+      return db.collection('orders').insertOne(order);
+    })
+    .then((result) => {
+      this.cart = { items : [] }
+      return db.collection('users')
+      .updateOne({ _id : new ObjectId(this._id)}, { $set : { cart : { items : [] } } }) 
+    })
+    .catch(err => {
+      console.log(err);
+    })
+  }
+
+  getOrders(){
+    const db = getDb();
+    return db.collection('orders').find({ "user._id" : new ObjectId(this._id) })
+    .toArray()
+    .then(orders => {
+      // console.log(orders);
+      return orders
     })
     .catch(err => {
       console.log(err);
