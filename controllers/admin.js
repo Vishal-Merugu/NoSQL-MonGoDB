@@ -19,7 +19,8 @@ exports.postAddProduct = (req, res, next) => {
     title : title,
     imageUrl : imageUrl,
     price : price,
-    description : description
+    description : description,
+    userId : req.user
   })
   product
     .save()
@@ -78,7 +79,10 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.getProducts = (req, res, next) => {
   Product.find()
+    // .select('price') //will return price from product
+    // .populate('userId', 'name') //will return whole user document using ref property and only name is returned to get full dont mention anything
     .then(products => {
+      console.log(products);
       res.render('admin/products', {
         prods: products,
         pageTitle: 'Admin Products',
